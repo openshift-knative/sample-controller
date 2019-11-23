@@ -1,11 +1,11 @@
-# Knative Sample Controller
+# Knative Eventing Sample Source
 
-[![GoDoc](https://godoc.org/knative.dev/sample-controller?status.svg)](https://godoc.org/knative.dev/sample-controller)
-[![Go Report Card](https://goreportcard.com/badge/knative/sample-controller)](https://goreportcard.com/report/knative/sample-controller)
+[![GoDoc](https://godoc.org/knative.dev/sample-controller?status.svg)](https://godoc.org/knative.dev/sample-source)
+[![Go Report Card](https://goreportcard.com/badge/knative/sample-controller)](https://goreportcard.com/report/knative/sample-source)
 
-Knative `sample-controller` defines a few simple resources that are validated by
-webhook and managed by a controller to demonstrate the canonical style in which
-Knative writes controllers.
+Knative Eventing `sample-source` defines a simple source that transforms events
+from an HTTP server into CloudEvents and demonstrates the canonical style in
+which Knative Eventing writes sources.
 
 To learn more about Knative, please visit our
 [Knative docs](https://github.com/knative/docs) repository.

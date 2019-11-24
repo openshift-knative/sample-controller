@@ -18,10 +18,12 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/pkg/apis"
+	"knative.dev/pkg/apis/duck"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
-	duckv1alpha1 "knative.dev/pkg/apis/duck/v1alpha1"
+	duckv1beta1 "knative.dev/pkg/apis/duck/v1beta1"
 	"knative.dev/pkg/kmeta"
 )
 
@@ -39,6 +41,11 @@ type SampleSource struct {
 	// Status communicates the observed state of the SampleSource (from the controller).
 	// +optional
 	Status SampleSourceStatus `json:"status,omitempty"`
+}
+
+// GetGroupVersionKind returns the GroupVersionKind.
+func (s *SampleSource) GetGroupVersionKind() schema.GroupVersionKind {
+	return SchemeGroupVersion.WithKind("SampleSource")
 }
 
 // Check that SampleSource is a runtime.Object.
@@ -65,11 +72,11 @@ type SampleSourceSpec struct {
 	ServiceAccountName string `json:"serviceAccountName,omitempty"`
 
 	// ServerURL is the URL of the source HTTP server
-	ServerURL string `json:"serverURL"`
+	SourceURL string `json:"sourceURL"`
 
 	// Sink is a reference to an object that will resolve to a host
 	// name to use as the sink.
-	Sink *duckv1alpha1.Destination `json:"sink"`
+	Sink *duckv1beta1.Destination `json:"sink"`
 }
 
 const (
@@ -80,7 +87,7 @@ const (
 
 // SampleSourceStatus communicates the observed state of the SampleSource (from the controller).
 type SampleSourceStatus struct {
-	duckv1beta1.Status `json:",inline"`
+	duckv1.Status `json:",inline"`
 
 	// SinkURI is the current active sink URI that has been configured
 	// for the SampleSource.

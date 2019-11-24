@@ -34,7 +34,7 @@ import (
 	appsv1listers "k8s.io/client-go/listers/apps/v1"
 	"k8s.io/client-go/tools/cache"
 	"knative.dev/sample-controller/pkg/reconciler/resources"
-	servingv1alpha1 "knative.dev/serving/pkg/apis/serving/v1alpha1"
+	//servingv1alpha1 "knative.dev/serving/pkg/apis/serving/v1alpha1"
 	eventingv1alpha1 "knative.dev/eventing/pkg/apis/eventing/v1alpha1"
 	eventinglisters "knative.dev/eventing/pkg/client/listers/eventing/v1alpha1"	
 	"knative.dev/eventing/pkg/logging"
@@ -384,7 +384,7 @@ func (r *Reconciler) updateStatus(ctx context.Context, desired *v1alpha1.SampleS
 	existing := samplesource.DeepCopy()
 	existing.Status = desired.Status
 
-	cj, err := r.samplesourceClientSet.SourcesV1alpha1().SampleSources(desired.Namespace).UpdateStatus(existing)
+	cj, err := r.samplesourceClientSet.SamplesV1alpha1().SampleSources(desired.Namespace).UpdateStatus(existing)
 	if err == nil && becomesReady {
 		duration := time.Since(cj.ObjectMeta.CreationTimestamp.Time)
 		r.Logger.Infof("SampleSource %q became ready after %v", samplesource.Name, duration)

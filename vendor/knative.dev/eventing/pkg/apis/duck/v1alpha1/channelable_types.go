@@ -25,7 +25,6 @@ import (
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/apis/duck/v1alpha1"
 	duckv1beta1 "knative.dev/pkg/apis/duck/v1beta1"
-	apisv1alpha1 "knative.dev/pkg/apis/v1alpha1"
 )
 
 // +genclient
@@ -94,7 +93,7 @@ func (c *Channelable) Populate() {
 	linear := BackoffPolicyLinear
 	delay := "5s"
 	c.Spec.Delivery = &DeliverySpec{
-		DeadLetterSink: &apisv1alpha1.Destination{
+		DeadLetterSink: &duckv1beta1.Destination{
 			Ref: &corev1.ObjectReference{
 				Name: "aname",
 			},
@@ -121,19 +120,6 @@ func (c *Channelable) Populate() {
 			},
 		},
 		SubscribableTypeStatus: SubscribableTypeStatus{
-			DeprecatedSubscribableStatus: &SubscribableStatus{
-				Subscribers: []SubscriberStatus{{
-					UID:                "2f9b5e8e-deb6-11e8-9f32-f2801f1b9fd1",
-					ObservedGeneration: 1,
-					Ready:              corev1.ConditionTrue,
-					Message:            "Some message",
-				}, {
-					UID:                "34c5aec8-deb6-11e8-9f32-f2801f1b9fd1",
-					ObservedGeneration: 2,
-					Ready:              corev1.ConditionFalse,
-					Message:            "Some message",
-				}},
-			},
 			SubscribableStatus: &SubscribableStatus{
 				Subscribers: []SubscriberStatus{{
 					UID:                "2f9b5e8e-deb6-11e8-9f32-f2801f1b9fd1",

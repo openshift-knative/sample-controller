@@ -34,15 +34,16 @@ import (
 	appsv1listers "k8s.io/client-go/listers/apps/v1"
 	"k8s.io/client-go/tools/cache"
 	"knative.dev/sample-controller/pkg/reconciler/resources"
+	servingv1alpha1 "knative.dev/serving/pkg/apis/serving/v1alpha1"
 	eventingv1alpha1 "knative.dev/eventing/pkg/apis/eventing/v1alpha1"
-	eventinglisters "knative.dev/eventing/pkg/client/listers/eventing/v1alpha1"
+	eventinglisters "knative.dev/eventing/pkg/client/listers/eventing/v1alpha1"	
 	"knative.dev/eventing/pkg/logging"
 	"knative.dev/eventing/pkg/reconciler"
 	"knative.dev/pkg/resolver"
 
-	"knative.dev/sample-controller/pkg/apis/sources/v1alpha1"
+	"knative.dev/sample-controller/pkg/apis/samples/v1alpha1"
 	versioned "knative.dev/sample-controller/pkg/client/clientset/versioned"
-	listers "knative.dev/sample-controller/pkg/client/listers/sources/v1alpha1"
+	listers "knative.dev/sample-controller/pkg/client/listers/samples/v1alpha1"
 )
 
 const (

@@ -21,16 +21,13 @@ import (
 
 	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
-	duckv1beta1 "knative.dev/pkg/apis/duck/v1beta1"
+	duckv1alpha1 "knative.dev/pkg/apis/duck/v1alpha1"
 	"knative.dev/pkg/kmeta"
 )
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// SampleSource defines a simple Eventing source that transforms events
-// from an HTTP server into CloudEvents and demonstrates the canonical style in
-// which Knative Eventing writes sources.
+// +k8s:openapi-gen=true
 type SampleSource struct {
 	metav1.TypeMeta `json:",inline"`
 	// +optional
@@ -45,13 +42,13 @@ type SampleSource struct {
 }
 
 // Check that SampleSource is a runtime.Object.
-var _ runtime.Object = (*PrometheusSource)(nil)
+var _ runtime.Object = (*SampleSource)(nil)
 
 // Check that we can create OwnerReferences to a SampleSource.
 var _ kmeta.OwnerRefable = (*SampleSource)(nil)
 
 // Check that SampleSource implements the Conditions duck type.
-var _ = duck.VerifyType(&PrometheusSource{}, &duckv1.Conditions{})
+var _ = duck.VerifyType(&SampleSource{}, &duckv1.Conditions{})
 
 const (
 	// SampleSourceEventType is the SampleSource CloudEvent type.
@@ -63,16 +60,16 @@ type SampleSourceSpec struct {
 	// ServiceAccountName holds the name of the Kubernetes service account
 	// as which the underlying K8s resources should be run. If unspecified
 	// this will default to the "default" service account for the namespace
-	// in which the PrometheusSource exists.
+	// in which the SampleSource exists.
 	// +optional
 	ServiceAccountName string `json:"serviceAccountName,omitempty"`
 
-	// ServerURL is the URL of the Prometheus server
+	// ServerURL is the URL of the source HTTP server
 	ServerURL string `json:"serverURL"`
 
 	// Sink is a reference to an object that will resolve to a host
 	// name to use as the sink.
-	Sink *duckv1beta1.Destination `json:"sink"`
+	Sink *duckv1alpha1.Destination `json:"sink"`
 }
 
 const (
@@ -86,7 +83,7 @@ type SampleSourceStatus struct {
 	duckv1beta1.Status `json:",inline"`
 
 	// SinkURI is the current active sink URI that has been configured
-	// for the PrometheusSource.
+	// for the SampleSource.
 	// +optional
 	SinkURI string `json:"sinkUri,omitempty"`
 }

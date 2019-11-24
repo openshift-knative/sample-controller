@@ -48,7 +48,7 @@ func NewAdapter(ctx context.Context, envAcc adapter.EnvConfigAccessor, sink clie
 	if err != nil {
 		log.Fatal("invalid URI", zap.String("source", env.SourceURI))
 	}
-	log.Info("starting sample adapter",
+	log.Info("starting sample source receive adapter",
 		zap.String("source", env.SourceURI),
 		zap.String("sink", env.SinkURI))
 	sender := adapter.NewClientSender(sink, ctx)

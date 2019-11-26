@@ -1,7 +1,23 @@
-apiVersion: samples.knative.dev/v1alpha1
-kind: AddressableService
+apiVersion: serving.knative.dev/v1
+kind: Service
 metadata:
-  name: make-it-addressable
+  name: event-display
   namespace: knative-samples
 spec:
-  serviceName: webhook
+  template:
+    spec:
+      containers:
+      - image: gcr.io/knative-releases/github.com/knative/eventing-sources/cmd/event_display
+---
+apiVersion: samples.knative.dev/v1alpha1
+kind: SampleSource
+metadata:
+  name: sample-source
+  namespace: knative-samples
+spec:
+  sourceURL: "http://sample-source-source.samples.knative.dev"
+  sink:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: event-display

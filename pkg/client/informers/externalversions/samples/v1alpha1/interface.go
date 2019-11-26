@@ -24,8 +24,8 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// AddressableServices returns a AddressableServiceInformer.
-	AddressableServices() AddressableServiceInformer
+	// SampleSources returns a SampleSourceInformer.
+	SampleSources() SampleSourceInformer
 }
 
 type version struct {
@@ -39,7 +39,7 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// AddressableServices returns a AddressableServiceInformer.
-func (v *version) AddressableServices() AddressableServiceInformer {
-	return &addressableServiceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// SampleSources returns a SampleSourceInformer.
+func (v *version) SampleSources() SampleSourceInformer {
+	return &sampleSourceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

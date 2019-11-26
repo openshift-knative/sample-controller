@@ -28,8 +28,8 @@ type FakeSamplesV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeSamplesV1alpha1) AddressableServices(namespace string) v1alpha1.AddressableServiceInterface {
-	return &FakeAddressableServices{c, namespace}
+func (c *FakeSamplesV1alpha1) SampleSources(namespace string) v1alpha1.SampleSourceInterface {
+	return &FakeSampleSources{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

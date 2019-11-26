@@ -18,10 +18,10 @@ limitations under the License.
 
 package v1alpha1
 
-// AddressableServiceListerExpansion allows custom methods to be added to
-// AddressableServiceLister.
-type AddressableServiceListerExpansion interface{}
+// SampleSourceListerExpansion allows custom methods to be added to
+// SampleSourceLister.
+type SampleSourceListerExpansion interface{}
 
-// AddressableServiceNamespaceListerExpansion allows custom methods to be added to
-// AddressableServiceNamespaceLister.
-type AddressableServiceNamespaceListerExpansion interface{}
+// SampleSourceNamespaceListerExpansion allows custom methods to be added to
+// SampleSourceNamespaceLister.
+type SampleSourceNamespaceListerExpansion interface{}

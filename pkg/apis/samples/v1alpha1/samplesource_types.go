@@ -71,8 +71,12 @@ type SampleSourceSpec struct {
 	// +optional
 	ServiceAccountName string `json:"serviceAccountName,omitempty"`
 
-	// ServerURL is the URL of the source HTTP server
-	SourceURL string `json:"sourceURL"`
+	// Interval is the time interval between events.
+	//
+	// The string format is a sequence of decimal numbers, each with optional
+	// fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m". Valid time
+	// units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+	Interval string `json:"interval"`
 
 	// Sink is a reference to an object that will resolve to a host
 	// name to use as the sink.

@@ -56,11 +56,11 @@ spec:
                 as which the sample source should run. If unspecified
                 this will default to the "default" service account for the namespace
                 in which the SampleSource exists
-            sourceURL:
+            interval:
               type: string
-	      minLength: 1
+	      minLength: 2
               description:
-                URL of the HTTP server that is the source of events
+                Interval between events, number and unit. For example "5s", "100ms"
             sink:
               anyOf:
               - type: object
@@ -106,7 +106,7 @@ spec:
                     type: string
                     description: "the target URI. If ref is provided, this must be relative URI reference."
           required:
-              - sourceURL
+              - interval
               - sink
           type: object
         status:

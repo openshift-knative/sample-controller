@@ -83,8 +83,8 @@ func makeEnv(eventSource, sinkURI string, spec *v1alpha1.SampleSourceSpec) []cor
 		Name:  "EVENT_SOURCE",
 		Value: eventSource,
 	}, {
-		Name:  "SOURCE_URL",
-		Value: spec.SourceURL,
+		Name:  "INTERVAL",
+		Value: spec.Interval,
 	}, {
 		Name: "NAMESPACE",
 		ValueFrom: &corev1.EnvVarSource{

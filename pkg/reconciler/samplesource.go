@@ -33,17 +33,16 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	appsv1listers "k8s.io/client-go/listers/apps/v1"
 	"k8s.io/client-go/tools/cache"
-	"knative.dev/sample-controller/pkg/reconciler/resources"
-	//servingv1alpha1 "knative.dev/serving/pkg/apis/serving/v1alpha1"
 	eventingv1alpha1 "knative.dev/eventing/pkg/apis/eventing/v1alpha1"
-	eventinglisters "knative.dev/eventing/pkg/client/listers/eventing/v1alpha1"	
+	eventinglisters "knative.dev/eventing/pkg/client/listers/eventing/v1alpha1"
 	"knative.dev/eventing/pkg/logging"
 	"knative.dev/eventing/pkg/reconciler"
 	"knative.dev/pkg/resolver"
 
-	"knative.dev/sample-controller/pkg/apis/samples/v1alpha1"
-	versioned "knative.dev/sample-controller/pkg/client/clientset/versioned"
-	listers "knative.dev/sample-controller/pkg/client/listers/samples/v1alpha1"
+	"knative.dev/sample-source/pkg/apis/samples/v1alpha1"
+	versioned "knative.dev/sample-source/pkg/client/clientset/versioned"
+	listers "knative.dev/sample-source/pkg/client/listers/samples/v1alpha1"
+	"knative.dev/sample-source/pkg/reconciler/resources"
 )
 
 const (
@@ -56,7 +55,7 @@ const (
 )
 
 var (
-	deploymentGVK        = appsv1.SchemeGroupVersion.WithKind("Deployment")
+	deploymentGVK          = appsv1.SchemeGroupVersion.WithKind("Deployment")
 	samplesourceEventTypes = []string{
 		v1alpha1.SampleSourceEventType,
 	}
@@ -74,8 +73,8 @@ type Reconciler struct {
 
 	// listers index properties about resources
 	samplesourceLister listers.SampleSourceLister
-	deploymentLister       appsv1listers.DeploymentLister
-	eventTypeLister        eventinglisters.EventTypeLister
+	deploymentLister   appsv1listers.DeploymentLister
+	eventTypeLister    eventinglisters.EventTypeLister
 
 	samplesourceClientSet versioned.Interface
 

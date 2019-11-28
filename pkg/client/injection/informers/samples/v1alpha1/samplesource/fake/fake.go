@@ -23,8 +23,8 @@ import (
 
 	controller "knative.dev/pkg/controller"
 	injection "knative.dev/pkg/injection"
-	fake "knative.dev/sample-controller/pkg/client/injection/informers/factory/fake"
-	samplesource "knative.dev/sample-controller/pkg/client/injection/informers/samples/v1alpha1/samplesource"
+	fake "knative.dev/sample-source/pkg/client/injection/informers/factory/fake"
+	samplesource "knative.dev/sample-source/pkg/client/injection/informers/samples/v1alpha1/samplesource"
 )
 
 var Get = samplesource.Get

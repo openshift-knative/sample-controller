@@ -25,7 +25,7 @@ import (
 	"knative.dev/eventing/pkg/utils"
 	"knative.dev/pkg/kmeta"
 
-	"knative.dev/sample-controller/pkg/apis/samples/v1alpha1"
+	"knative.dev/sample-source/pkg/apis/samples/v1alpha1"
 )
 
 // ReceiveAdapterArgs are the arguments needed to create a Sample Source Receive Adapter.

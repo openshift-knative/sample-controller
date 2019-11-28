@@ -20,8 +20,8 @@ package v1alpha1
 
 import (
 	rest "k8s.io/client-go/rest"
-	v1alpha1 "knative.dev/sample-controller/pkg/apis/samples/v1alpha1"
-	"knative.dev/sample-controller/pkg/client/clientset/versioned/scheme"
+	v1alpha1 "knative.dev/sample-source/pkg/apis/samples/v1alpha1"
+	"knative.dev/sample-source/pkg/client/clientset/versioned/scheme"
 )
 
 type SamplesV1alpha1Interface interface {

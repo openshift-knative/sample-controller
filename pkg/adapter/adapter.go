@@ -18,12 +18,12 @@ package adapter
 import (
 	"context"
 	"net/url"
-	"strconv"
 	"time"
 
-	ce "github.com/cloudevents/sdk-go/pkg/cloudevents"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"knative.dev/eventing/pkg/adapter"
 	"knative.dev/pkg/logging"
@@ -48,20 +48,29 @@ type Adapter struct {
 	sink     client.Client
 }
 
+type dataExample struct {
+	Sequence  int
+	Heartbeat string
+}
+
 var sourceURI = types.URIRef{URL: url.URL{Scheme: "http", Host: "heartbeat.example.com", Path: "/heartbeat-source"}}
 
 func strptr(s string) *string { return &s }
 
-func (a *Adapter) newEvent() ce.Event {
-	e := ce.Event{
-		Context: ce.EventContextV1{
-			ID:              strconv.Itoa(a.nextID),
+func (a *Adapter) newEvent() cloudevents.Event {
+
+	e := cloudevents.Event{
+		Context: cloudevents.EventContextV1{
+			ID:              uuid.New().String(),
 			Type:            "com.example.heartbeat",
 			Source:          sourceURI,
 			Time:            &types.Timestamp{Time: time.Now()},
-			DataContentType: strptr("text/json"),
-		}.AsV1(),
-		Data: map[string]string{"heartbeat": a.interval.String()},
+			DataContentType: strptr("application/json"),
+		}.AsV01(),
+		Data: &dataExample{
+			Sequence:  a.nextID,
+			Heartbeat: a.interval.String(),
+		},
 	}
 	a.nextID++
 	return e

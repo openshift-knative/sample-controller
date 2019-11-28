@@ -42,6 +42,7 @@ func NewEnv() adapter.EnvConfigAccessor { return &envConfig{} }
 
 // Adapter generates events at a regular interval.
 type Adapter struct {
+	logger   *zap.Logger
 	interval time.Duration
 	nextID   int
 	sink     client.Client
@@ -69,14 +70,19 @@ func (a *Adapter) newEvent() ce.Event {
 // Start runs the adapter.
 // Returns if stopCh is closed or Send() returns an error.
 func (a *Adapter) Start(stopCh <-chan struct{}) error {
+	a.logger.Info("Starting with: ",
+		zap.String("Interval: ", a.interval.String()))
 	for {
 		select {
 		case <-time.After(a.interval):
-			_, _, err := a.sink.Send(context.Background(), a.newEvent())
+			event := a.newEvent()
+			a.logger.Info("Sending new event: ", zap.String("event", event.String()))
+			_, _, err := a.sink.Send(context.Background(), event)
 			if err != nil {
 				return err
 			}
 		case <-stopCh:
+			a.logger.Info("Shutting down...")
 			return nil
 		}
 	}
@@ -84,6 +90,11 @@ func (a *Adapter) Start(stopCh <-chan struct{}) error {
 
 func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, sink client.Client, reporter source.StatsReporter) adapter.Adapter {
 	env := aEnv.(*envConfig) // Will always be our own envConfig type
-	logging.FromContext(ctx).Info("Heartbeat example", zap.Duration("interval", env.Interval))
-	return &Adapter{interval: env.Interval, sink: sink}
+	logger := logging.FromContext(ctx).Desugar()
+	logger.Info("Heartbeat example", zap.Duration("interval", env.Interval))
+	return &Adapter{
+		interval: env.Interval,
+		sink:     sink,
+		logger:   logger,
+	}
 }

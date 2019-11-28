@@ -14,149 +14,109 @@ limitations under the License.
 package adapter
 
 import (
-	"bufio"
 	"context"
-	"fmt"
-	"io"
 	"net"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
 	"os"
 	"os/exec"
-	"strings"
 	"testing"
 	"time"
 
+	ce "github.com/cloudevents/sdk-go"
 	cloudevents "github.com/cloudevents/sdk-go"
-	"github.com/cloudevents/sdk-go/pkg/binding"
-	"github.com/cloudevents/sdk-go/pkg/binding/test"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/transport"
+	cehttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 	"knative.dev/eventing-contrib/pkg/kncloudevents"
-	"knative.dev/sample-controller/pkg/eventing/adapter"
+	"knative.dev/eventing/pkg/adapter"
+	"knative.dev/pkg/logging"
 )
 
-var (
-	sourceURI = types.URIRef{URL: url.URL{Scheme: "http", Host: "example.com", Path: "/source"}}
-	timestamp = types.Timestamp{Time: time.Date(2020, 03, 21, 12, 34, 56, 780000000, time.UTC)}
-	schema    = types.URI{URL: url.URL{Scheme: "http", Host: "example.com", Path: "/schema"}}
-)
-
-func testEvent() cloudevents.Event {
-	return cloudevents.Event{
-		Context: cloudevents.EventContextV1{
-			Type:   "com.example.MinEvent",
-			Source: sourceURI,
-			ID:     "min-event",
-			Time:   &timestamp,
-		}.AsV1(),
-	}
-}
-
-func testSender(t *testing.T, targetURL string) binding.SendCloser {
-	t.Helper()
-	c, err := kncloudevents.NewDefaultClient(targetURL)
+func TestAdapter(t *testing.T) {
+	// Test sink to receive events.
+	sink := newSink(t)
+	defer sink.close()
+	c, err := kncloudevents.NewDefaultClient(sink.URL())
 	require.NoError(t, err)
-	return adapter.NewClientSender(c, context.Background())
+
+	// Keep the adapter logging quiet for tests.
+	ctx := logging.WithLogger(context.Background(), zap.NewNop().Sugar())
+	a := NewAdapter(ctx, &envConfig{Interval: time.Duration(time.Millisecond)}, c, nil)
+	stop := make(chan struct{})
+	go a.Start(stop)
+	defer func() { close(stop) }()
+	verify(t, sink.received)
 }
 
-func TestNewHandlerReceiver(t *testing.T) {
-	r := NewHandlerReceiver()
-	rSrv := httptest.NewServer(r)
-	defer rSrv.Close()
-	s := testSender(t, rSrv.URL)
-	defer s.Close(context.Background())
-
-	want := binding.EventMessage(testEvent())
-	got := test.SendReceive(t, want, s, r)
-	test.AssertMessageEventEqual(t, want, got)
-}
-
-func TestNewServerReceiver(t *testing.T) {
-	addr := ephemeralAddr(t)
-	r, err := NewServerReceiver(http.Server{Addr: addr})
-	require.NoError(t, err)
-	defer r.Close(context.Background())
-	s := testSender(t, "http://"+addr)
-	defer s.Close(context.Background())
-
-	want := binding.EventMessage(testEvent())
-	got := test.SendReceive(t, want, s, r)
-	test.AssertMessageEventEqual(t, want, got)
-}
-
-func adapterEnv(sourceURI, sinkURI string) []string {
-	return []string{
-		"SINK_URI=" + sinkURI,
-		"SOURCE_URI=" + sourceURI,
-		"NAMESPACE=namespace",
-		`K_METRICS_CONFIG={"domain":"x", "component":"x", "prometheusport":0, "configmap":{}}`,
-		`K_LOGGING_CONFIG={}`,
+func verify(t *testing.T, received chan ce.Event) {
+	for _, id := range []string{"0", "1", "2"} {
+		e := <-received
+		assert.Equal(t, id, e.ID())
+		assert.Equal(t, "com.example.heartbeat", e.Type())
+		m := map[string]string{}
+		assert.NoError(t, e.DataAs(&m))
+		assert.Equal(t, map[string]string{"heartbeat": "1ms"}, m)
 	}
-}
-
-// ephemeralAddr returns a listening address with a free local ephemeral port.
-//
-// This is not 100% reliable, the port can be taken before the caller starts
-// listening on it.
-func ephemeralAddr(t *testing.T) string {
-	l, err := net.Listen("tcp", ":0")
-	require.NoError(t, err)
-	defer l.Close()
-	return l.Addr().String()
-}
-
-func waitFor(r io.Reader, what string) error {
-	out := ""
-	scanner := bufio.NewScanner(r)
-	for scanner.Scan() {
-		out += scanner.Text() + "\n"
-		if strings.Contains(out, what) {
-			return nil
-		}
-	}
-	return fmt.Errorf("Expected: %q\nGot ==\n%s\n--", what, out)
 }
 
 func TestAdapterMain(t *testing.T) {
-	// Use the test executable to simulate the cmd/receive_adapter process if env var
-	// t.Name() is set to "main" (trick from https://talks.golang.org/2014/testing.slide#23)
+	// Use the test executable to simulate the cmd/receive_adapter process if
+	// environment var t.Name() is set to "main"
+	// (see https://talks.golang.org/2014/testing.slide#23)
 	if os.Getenv(t.Name()) == "main" {
 		adapter.Main("sample-source", NewEnv, NewAdapter)
 		return
 	}
 
-	// Use an adapter.Receiver as the sink for the adapter.
-	r := NewHandlerReceiver()
-	rSrv := httptest.NewServer(r)
-	defer rSrv.Close()
-	sinkURI := rSrv.URL
+	// Set up a test sink to receive from the adapter.
+	sink := newSink(t)
+	defer sink.close()
 
 	// Run a simulated receive_adapter main using the test executable.
-	sourceURI := "http://" + ephemeralAddr(t)
 	cmd := exec.Command(os.Args[0], "-test.run="+t.Name())
 	cmd.Env = append(os.Environ(),
 		t.Name()+"=main",
-		"SINK_URI="+sinkURI,
-		"SOURCE_URI="+sourceURI,
+		"SINK_URI="+sink.URL(),
+		"INTERVAL="+"1ms",
 		"NAMESPACE=namespace",
 		`K_METRICS_CONFIG={"domain":"x", "component":"x", "prometheusport":0, "configmap":{}}`,
 		`K_LOGGING_CONFIG={}`,
 	)
-
-	// Collect output, wait for "starting sample adapter"
-	pr, pw := io.Pipe()
-	cmd.Stdout, cmd.Stderr = pw, pw
-	require.NoError(t, cmd.Start())
-	defer func() { cmd.Process.Kill(); _, _ = cmd.Process.Wait() }()
-	require.NoError(t, waitFor(pr, "starting sample receive adapter"))
-	go func() { io.Copy(cmd.Stderr, pr) }() // Copy any further log output to stderr.
-
-	// Send to adapter source URI, verify event received at the sink.
-	s := testSender(t, sourceURI)
-	defer s.Close(context.Background())
-	want := binding.EventMessage(testEvent())
-	got := test.SendReceive(t, want, s, r)
-	test.AssertMessageEventEqual(t, want, got)
+	cmd.Start()
+	defer func() { cmd.Process.Kill(); cmd.Wait() }()
+	verify(t, sink.received)
 }
+
+type sink struct {
+	listener  net.Listener
+	transport transport.Transport
+	ctx       context.Context
+	close     func()
+	received  chan ce.Event
+}
+
+func newSink(t *testing.T) *sink {
+	s := &sink{received: make(chan ce.Event)}
+	s.ctx, s.close = context.WithCancel(context.Background())
+	var err error
+	s.listener, err = net.Listen("tcp", ":0")
+	require.NoError(t, err)
+	s.transport, err = cehttp.New(cehttp.WithListener(s.listener))
+	s.transport.SetReceiver(transport.ReceiveFunc(
+		func(ctx context.Context, e cloudevents.Event, _ *cloudevents.EventResponse) error {
+			select {
+			case s.received <- e:
+				return nil
+			case <-ctx.Done():
+				return ctx.Err()
+			}
+		}))
+	go func() {
+		_ = s.transport.StartReceiver(s.ctx)
+		close(s.received)
+	}()
+	return s
+}
+
+func (s *sink) URL() string { return "http://" + s.listener.Addr().String() }

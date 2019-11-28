@@ -11,51 +11,79 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package adapter implements a sample receive adapter to receive HTTP events.
+// Package adapter implements a sample receive adapter that generates events
+// at a regular interval.
 package adapter
 
 import (
 	"context"
-	"net/http"
 	"net/url"
+	"strconv"
+	"time"
 
+	ce "github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"go.uber.org/zap"
+	"knative.dev/eventing/pkg/adapter"
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/source"
-	"knative.dev/sample-controller/pkg/eventing/adapter"
 )
 
 type envConfig struct {
 	// Include the standard adapter.EnvConfig used by all adapters.
 	adapter.EnvConfig
 
-	// SourceURI provides the "host:port" listening address for the HTTP Source.
-	SourceURI string `envconfig:"SOURCE_URI" required:"true"`
+	// Interval between events, for example "5s", "100ms"
+	Interval time.Duration `envconfig:"INTERVAL" required:"true"`
 }
 
 func NewEnv() adapter.EnvConfigAccessor { return &envConfig{} }
 
-// NOTE: The sink argument is provided by the current adapter.Main.  If we want
-// to allow arbitrary sinks, we should instead allow the adapter constructor to
-// create its own sink Sender. The library can provide `DefaultHTTPSink()
-// binding.Sender` for sources that want the default HTTP behavior.
+// Adapter generates events at a regular interval.
+type Adapter struct {
+	interval time.Duration
+	nextID   int
+	sink     client.Client
+}
 
-func NewAdapter(ctx context.Context, envAcc adapter.EnvConfigAccessor, sink client.Client, reporter source.StatsReporter) adapter.Adapter {
-	env := envAcc.(*envConfig)
-	log := logging.FromContext(ctx)
-	u, err := url.Parse(env.SourceURI)
-	if err != nil {
-		log.Fatal("invalid URI", zap.String("source", env.SourceURI))
+var sourceURI = types.URIRef{URL: url.URL{Scheme: "http", Host: "heartbeat.example.com", Path: "/heartbeat-source"}}
+
+func strptr(s string) *string { return &s }
+
+func (a *Adapter) newEvent() ce.Event {
+	e := ce.Event{
+		Context: ce.EventContextV1{
+			ID:              strconv.Itoa(a.nextID),
+			Type:            "com.example.heartbeat",
+			Source:          sourceURI,
+			Time:            &types.Timestamp{Time: time.Now()},
+			DataContentType: strptr("text/json"),
+		}.AsV1(),
+		Data: map[string]string{"heartbeat": a.interval.String()},
 	}
-	log.Info("starting sample source receive adapter",
-		zap.String("source", env.SourceURI),
-		zap.String("sink", env.SinkURI))
-	sender := adapter.NewClientSender(sink, ctx)
-	receiver, err := NewServerReceiver(http.Server{Addr: u.Host})
-	if err != nil {
-		log.Fatal("can't create source receiver", zap.Error(err))
+	a.nextID++
+	return e
+}
+
+// Start runs the adapter.
+// Returns if stopCh is closed or Send() returns an error.
+func (a *Adapter) Start(stopCh <-chan struct{}) error {
+	for {
+		select {
+		case <-time.After(a.interval):
+			_, _, err := a.sink.Send(context.Background(), a.newEvent())
+			if err != nil {
+				return err
+			}
+		case <-stopCh:
+			return nil
+		}
 	}
-	log.Info("starting sample receive adapter")
-	return &adapter.BindingAdapter{Receiver: receiver, Sender: sender}
+}
+
+func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, sink client.Client, reporter source.StatsReporter) adapter.Adapter {
+	env := aEnv.(*envConfig) // Will always be our own envConfig type
+	logging.FromContext(ctx).Info("Heartbeat example", zap.Duration("interval", env.Interval))
+	return &Adapter{interval: env.Interval, sink: sink}
 }

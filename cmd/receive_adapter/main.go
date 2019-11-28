@@ -11,12 +11,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Adapter to receive events from an HTTP SOURCE and send them to a HTTP SINK
+// This Adapter generates events at a regular interval.
 package main
 
 import (
+	"knative.dev/eventing/pkg/adapter"
 	myadapter "knative.dev/sample-controller/pkg/adapter"
-	"knative.dev/sample-controller/pkg/eventing/adapter"
 )
 
 func main() {

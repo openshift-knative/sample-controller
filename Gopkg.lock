@@ -111,14 +111,10 @@
   version = "v0.2.1"
 
 [[projects]]
-  digest = "1:f910915f0e566fd4e0b0a2b96121070377f8de95458e8e1ed60ab7aa8755f735"
+  digest = "1:902544577dcb868a5ae31529d73a1ce5031e224923290caedf6176241ee304e0"
   name = "github.com/cloudevents/sdk-go"
   packages = [
     ".",
-    "pkg/binding",
-    "pkg/binding/format",
-    "pkg/binding/spec",
-    "pkg/binding/test",
     "pkg/cloudevents",
     "pkg/cloudevents/client",
     "pkg/cloudevents/context",
@@ -1301,14 +1297,13 @@
   analyzer-version = 1
   input-imports = [
     "github.com/cloudevents/sdk-go",
-    "github.com/cloudevents/sdk-go/pkg/binding",
-    "github.com/cloudevents/sdk-go/pkg/binding/format",
-    "github.com/cloudevents/sdk-go/pkg/binding/spec",
-    "github.com/cloudevents/sdk-go/pkg/binding/test",
     "github.com/cloudevents/sdk-go/pkg/cloudevents",
     "github.com/cloudevents/sdk-go/pkg/cloudevents/client",
+    "github.com/cloudevents/sdk-go/pkg/cloudevents/transport",
+    "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http",
     "github.com/cloudevents/sdk-go/pkg/cloudevents/types",
     "github.com/kelseyhightower/envconfig",
+    "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/require",
     "go.uber.org/zap",
     "k8s.io/api/apps/v1",

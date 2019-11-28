@@ -28,8 +28,8 @@ import (
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/resolver"
 
-	"knative.dev/sample-controller/pkg/client/injection/client"
-	samplesourceinformer "knative.dev/sample-controller/pkg/client/injection/informers/samples/v1alpha1/samplesource"
+	"knative.dev/sample-source/pkg/client/injection/client"
+	samplesourceinformer "knative.dev/sample-source/pkg/client/injection/informers/samples/v1alpha1/samplesource"
 )
 
 const (

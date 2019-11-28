@@ -16,7 +16,7 @@ package main
 
 import (
 	"knative.dev/eventing/pkg/adapter"
-	myadapter "knative.dev/sample-controller/pkg/adapter"
+	myadapter "knative.dev/sample-source/pkg/adapter"
 )
 
 func main() {

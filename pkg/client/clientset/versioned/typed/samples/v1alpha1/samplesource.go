@@ -25,8 +25,8 @@ import (
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	rest "k8s.io/client-go/rest"
-	v1alpha1 "knative.dev/sample-controller/pkg/apis/samples/v1alpha1"
-	scheme "knative.dev/sample-controller/pkg/client/clientset/versioned/scheme"
+	v1alpha1 "knative.dev/sample-source/pkg/apis/samples/v1alpha1"
+	scheme "knative.dev/sample-source/pkg/client/clientset/versioned/scheme"
 )
 
 // SampleSourcesGetter has a method to return a SampleSourceInterface.

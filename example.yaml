@@ -15,7 +15,7 @@ metadata:
   name: sample-source
   namespace: knative-samples
 spec:
-  interval: "1s"
+  interval: "10s"
   sink:
     ref:
       apiVersion: serving.knative.dev/v1

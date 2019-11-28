@@ -24,7 +24,7 @@ import (
 	eventingv1alpha1 "knative.dev/eventing/pkg/apis/eventing/v1alpha1"
 	"knative.dev/eventing/pkg/utils"
 
-	"knative.dev/sample-controller/pkg/apis/samples/v1alpha1"
+	"knative.dev/sample-source/pkg/apis/samples/v1alpha1"
 )
 
 // EventTypeArgs are the arguments needed to create an EventType for a Sample source.

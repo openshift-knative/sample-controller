@@ -1302,6 +1302,7 @@
     "github.com/cloudevents/sdk-go/pkg/cloudevents/transport",
     "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http",
     "github.com/cloudevents/sdk-go/pkg/cloudevents/types",
+    "github.com/google/uuid",
     "github.com/kelseyhightower/envconfig",
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/require",
